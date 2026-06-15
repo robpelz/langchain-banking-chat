@@ -1,10 +1,9 @@
 # 🏦 PDF-Banking Assistant – KI-gestützte Finanzanalyse aus Bank-PDFs
 
-[![Java](https://img.shields.io/badge/Java-21-red)](https://adoptium.net/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.3-brightgreen)](https://spring.io/)
-[![Groq](https://img.shields.io/badge/Groq-LLM-8A2BE2)](https://groq.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/your-username/your-repo/pulls)
+[![Java](https://img.shields.io/badge/Java-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/)
+[![Groq](https://img.shields.io/badge/Groq-100000?style=flat&logo=groq&logoColor=white)](https://groq.com/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Ein intelligenter, produktionsreifer Finanzassistent auf Basis einer LLM-first-Architektur. Das System extrahiert strukturierte Transaktionsdaten aus unstrukturierten Bank-Kontoauszügen (PDF) und ermöglicht komplexe, kontextbezogene Analysen über ein intuitives Web-Interface mittels natürlicher Sprache.
 

@@ -6,6 +6,7 @@ target/
 
 .env
 application-secret.yml
+application-local.yml
 
 ### STS ###
 .apt_generated

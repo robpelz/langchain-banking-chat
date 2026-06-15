@@ -1,10 +1,10 @@
 # 🏦 PDF-Banking Assistant – KI-gestützte Finanzanalyse aus Bank-PDFs
 
-[![Java](https://shields.io)](https://adoptium.net/)
-[![Spring Boot](https://shields.io)](https://spring.io/)
-[![Groq](https://shields.io)](https://groq.com/)
+[![Java](https://shields.io)](https://adoptium.net)
+[![Spring Boot](https://shields.io)](https://spring.io)
+[![Groq](https://shields.io)](https://groq.com)
 [![License](https://shields.io)](LICENSE)
-[![PRs](https://shields.io)](https://github.com/your-username/pdf-banking-assistant/pulls)
+[![PRs](https://shields.io)](https://github.com)
 
 Ein intelligenter, produktionsreifer Finanzassistent auf Basis einer LLM-first-Architektur. Das System extrahiert strukturierte Transaktionsdaten aus unstrukturierten Bank-Kontoauszügen (PDF) und ermöglicht komplexe, kontextbezogene Analysen über ein intuitives Web-Interface mittels natürlicher Sprache.
 
@@ -27,6 +27,39 @@ Klassische regel- oder Regex-basierte Parser scheitern systematisch an der Varia
 * **⚡ Hochperformer In-Memory-Storage** – Thread-sichere Datenhaltung mittels `CopyOnWriteArrayList` für schnellen Durchsatz im Demo-Betrieb, vollständig entkoppelt für einfache PostgreSQL-Migration.
 * **🎨 Modern Responsive UI** – Schlankes, mobiles Interface auf Basis von Spring Thymeleaf, dynamisch gerendert mit TailwindCSS.
 * **🔌 Pluggable LLM-Provider** – Abstrahiertes API-Interface, aktuell optimiert für Groq Cloud (Durchsatz ~840 Tokens/Sek), vorbereitet für Ollama (Local), OpenAI und Azure.
+## 📐 Systemarchitektur (Datenfluss)
+
+Das folgende Diagramm visualisiert den automatisierten Datenfluss vom initialen Dokumenten-Upload bis zur interaktiven Abfrage über das Large Language Model (LLM):
+
+```mermaid
+graph TD
+    User([Nutzer / Browser]) -->|1. PDF Upload| ChatController
+    User -->|Abfrage: 'Ausgaben März?'| ChatController
+    
+    subgraph Spring Boot Backend
+        ChatController -->|Text extrahieren| PdfTextExtractor
+        PdfTextExtractor -->|Roh-Text / Chunks| PdfParsingService
+        
+        PdfParsingService -->|Prompt + JSON Schema| GroqClient
+        GroqClient -->|Strukturiertes JSON| PdfParsingService
+        
+        PdfParsingService -->|Transaction Entities| TransactionStorageService
+        TransactionStorageService -->|In-Memory Cache| CopyOnWriteArrayList[(Thread-safe Store)]
+        
+        ChatController -->|Query Kontext| FinanceAnalysisService
+        FinanceAnalysisService -->|Aggregierte Daten| TransactionStorageService
+    end
+    
+    subgraph Externe API
+        GroqClient <-->|HTTPS REST / Llama 3.3| GroqCloud((Groq Cloud LLM))
+    end
+
+    FinanceAnalysisService -->|Antwort-Payload| ChatController
+    ChatController -->|Dynamisches HTML / JSON| User
+```
+
+---
+
 ## 🧱 Tech Stack & Systemvoraussetzungen
 
 ### Technologische Architektur
@@ -43,9 +76,6 @@ Klassische regel- oder Regex-basierte Parser scheitern systematisch an der Varia
 * **Build-Umgebung** – Lokale Maven-Installation oder Ausführung über den mitgelieferten Maven Wrapper (`mvnw`)
 * **API-Zugang** – Ein gültiger Groq-API-Key ([Kostenlose Registrierung in der Groq Console](https://groq.com))
 * **Optional** – Docker Engine (für containerisierte Builds und Deployments)
-
----
-
 ## ⚙️ Installation & Lokales Setup
 
 ### 1. Repository klonen und Verzeichnis wechseln
@@ -178,44 +208,6 @@ Die Applikation stellt sowohl eine Weboberfläche als auch eine programmatisch a
 curl -X POST http://localhost:8080/api/upload \
   -F "file=@/path/to/your/kontoauszug.pdf"
 ```
-*Antwort (HTTP 200):*
-```json
-{
-  "status": "success",
-  "message": "PDF erfolgreich verarbeitet. 42 Transaktionen extrahiert."
-}
-```
-
-## 🏗️ Systemarchitektur
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Browser as Web Browser
-    participant Controller as ChatController
-    participant Service as PdfParsingService
-    participant Groq as Groq API
-    participant Storage as StorageService
-
-    User->>Browser: 1. PDF hochladen
-    Browser->>Controller: POST /api/upload
-    Controller->>Service: parseAndStore()
-    Service->>Service: 2. Seitenweises Chunking
-    loop Jede Seite
-        Service->>Groq: 3. Prompt mit PDF-Text
-        Groq-->>Service: 4. JSON-Array
-        Service->>Service: 5. JSON parsen → Transactions
-    end
-    Service->>Storage: 6. addAllTransactions()
-    Storage-->>Controller: transactionCount
-    Controller-->>Browser: "✅ 31 Transaktionen"
-    User->>Browser: 7. "Gesamtausgaben März"
-    Browser->>Controller: POST /api/chat
-    Controller->>Storage: getAllTransactions()
-    Storage-->>Controller: List<Transaction>
-    Controller->>Controller: 8. Berechnung
-    Controller-->>Browser: "📊 2.450,00 €"
-    Browser-->>User: 9. Antwort anzeigen
 
 #### 2. Natural-Language-Anfrage an den Finanz-Assistenten senden
 ```bash
@@ -228,19 +220,6 @@ curl -X POST http://localhost:8080/api/chat \
 {
   "answer": "🛒 Deine Ausgaben für Lebensmittel beliefen sich im März auf insgesamt 345,67 €. Die größte Einzelbuchung war 'REWE SUPERMARKT' mit 82,40 € am 12.03.",
   "sources": ["kontoauszug_maerz_2026.pdf"]
-}
-```
-
-#### 3. Systemstatus abfragen
-```bash
-curl -X GET http://localhost:8080/api/status
-```
-*Antwort (HTTP 200):*
-```json
-{
-  "transactionCount": 184,
-  "lastUpload": "2026-06-16T10:15:30Z",
-  "activeProvider": "Groq (Llama 3.3 70B)"
 }
 ```
 ## 🚀 Deployment & CI/CD-Hinweise
@@ -272,7 +251,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 #### 2. Image bauen und lokal ausführen
 ```bash
-# Artefakt und Container-Image bauen
+# Container-Image bauen
 docker build -t pdf-banking-assistant .
 
 # Container starten mit injiziertem API-Key
@@ -317,7 +296,7 @@ jobs:
 ```
 
 ### ⚠️ Architektur-Checkliste für den Produktivbetrieb
-Bevor das System in einer produktiven Cloud-Umgebung (AWS, Azure, GCP) ausgerollt wird, müssen folgende Anpassungen vorgenommen werden:
+Bevor das System in einer produktiven Cloud-Umgebung ausgerollt wird, müssen folgende Anpassungen vorgenommen werden:
 * **Persistence Layer** – Der flüchtige In-Memory-Storage (`CopyOnWriteArrayList`) muss durch ein persistentes Datenbanksystem (z. B. PostgreSQL) via Spring Data JPA ersetzt werden.
 * **Secrets-Management** – Der `GROQ_API_KEY` darf niemals im Filesystem persistiert werden. Nutzen Sie AWS Secrets Manager, HashiCorp Vault oder GitHub Encrypted Secrets.
 * **Production-Profil aktivieren** – Starten Sie die Anwendung mit `-Dspring.profiles.active=prod`, um verfeinerte Sicherheitsrichtlinien und optimierte Caching-Mechanismen zu laden.
@@ -331,7 +310,7 @@ Wir begrüßen Beiträge aus der Community. Um die Codequalität auf Senior-Nive
 
 ### 🔱 Branch-Strategie & Git-Workflow
 * **`main`** – Enthält ausschließlich stabilen, produktionsreifen und releasten Code (geschützt, Direct-Pushes sind blockiert).
-* **`develop`** – Der zentrale Integrations-Branch für neue Features.
+* **`develop`** – Der zentraler Integrations-Branch für neue Features.
 * **`feature/*`** / **`bugfix/*`** – Isolierte Branches für dedizierte Arbeiten, immer abzweigend von `develop`.
 
 ### 🔄 Pull-Request-Prozess

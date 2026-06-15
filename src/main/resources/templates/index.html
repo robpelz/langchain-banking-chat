@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Banking PDF Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,125 +18,172 @@
             20% { opacity: 1; }
             100% { opacity: 0.2; }
         }
+
+        /* Fragezeichen-Popup */
+        .help-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 280px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.02);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .help-popup.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .help-btn {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .help-btn:hover {
+            background: #f1f5f9;
+            transform: scale(1.05);
+        }
+        @media (max-width: 640px) {
+            .help-popup {
+                width: 260px;
+                right: 16px;
+                bottom: 80px;
+            }
+            .help-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
 
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-    <!-- Header -->
-    <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
+<!-- Fragezeichen-Popup -->
+<div id="helpPopup" class="help-popup">
+    <div class="p-4">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-800">💡 Beispielfragen</h3>
+            <button id="closePopupBtn" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
         </div>
-        <h1 class="text-3xl font-bold text-slate-800">Banking PDF Assistant</h1>
-        <p class="text-slate-500 mt-2">Analysiere deine Kontoauszüge mit KI</p>
+        <p class="text-xs text-slate-500 mb-3">Klicke auf eine Frage zum Ausprobieren</p>
+        <div class="space-y-2">
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                💰 Was waren meine höchsten Ausgaben im März?
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                📊 Welche Kategorie ist am teuersten?
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                💹 Wie hoch ist meine Sparquote?
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                📈 Vergleich Januar mit Februar
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                🛒 Wie viel habe ich für Lebensmittel ausgegeben?
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                🏠 Was sind meine monatlichen Fixkosten?
+            </button>
+            <button class="sample-question w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition-colors text-xs text-slate-700">
+                📋 Zeige mir alle Buchungen
+            </button>
+        </div>
+        <div class="mt-3 pt-2 border-t border-slate-100">
+            <p class="text-xs text-slate-400 text-center">
+                💡 Eigene Fragen? Einfach eingeben!
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-4 max-w-4xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800">🏦 PDF Banking Assistant</h1>
+            <p class="text-xs text-slate-500">Analysiere Kontoauszüge mit KI</p>
+        </div>
+        <div class="text-right">
+            <div class="text-xs text-slate-400">
+                📊 <span id="transactionCount" th:text="${totalTransactions}">0</span> Buchungen
+            </div>
+        </div>
     </div>
 
-    <!-- PDF Upload Bereich -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- PDF Upload Bereich (kompakt) -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-slate-700">PDFs hochladen</p>
-                    <p class="text-xs text-slate-400">Unterstützt PDF-Dateien (max. 10 MB)</p>
+                    <p class="text-xs font-medium text-slate-700">PDF hochladen</p>
                 </div>
             </div>
-
             <div class="flex gap-2">
-                <button id="selectFileBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-                    📄 Datei auswählen
+                <button id="selectFileBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                    📄 Datei
                 </button>
-                <button id="uploadBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50" disabled>
+                <button id="uploadBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-50" disabled>
                     Hochladen
                 </button>
             </div>
         </div>
-
-        <!-- Upload-Status -->
-        <div id="uploadStatus" class="mt-3 text-xs text-slate-500 hidden">
+        <div id="uploadStatus" class="mt-2 text-xs text-slate-500 hidden">
             <span id="uploadFileName"></span>
-            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1">
-                <div id="uploadProgress" class="bg-blue-600 h-1.5 rounded-full transition-all" style="width: 0%"></div>
+            <div class="w-full bg-slate-100 rounded-full h-1 mt-1">
+                <div id="uploadProgress" class="bg-blue-600 h-1 rounded-full transition-all" style="width: 0%"></div>
             </div>
         </div>
-
-        <!-- PDF Liste (sichtbar!) -->
-        <div class="mt-4 pt-3 border-t border-slate-100">
-            <p class="text-xs font-medium text-slate-500 mb-2">📁 Hochgeladene PDFs:</p>
-            <div id="pdfFileList" class="flex flex-wrap gap-2 min-h-[40px]">
-                <span class="text-xs text-slate-400 italic">Keine PDFs hochgeladen</span>
-            </div>
-        </div>
+        <div id="pdfFileList" class="mt-2 flex flex-wrap gap-1"></div>
     </div>
 
     <!-- Chat Messages Area -->
-    <div id="chatMessages" class="bg-white rounded-2xl shadow-sm border border-slate-200 h-[400px] overflow-y-auto p-4 mb-4">
-        <div class="flex justify-start mb-4">
-            <div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-2 max-w-[80%]">
-                <p class="text-slate-700 text-sm">👋 Hallo! Lade deine Kontoauszüge hoch und frage nach Analysen.</p>
+    <div id="chatMessages" class="bg-white rounded-xl shadow-sm border border-slate-200 h-[450px] overflow-y-auto p-3 mb-3">
+        <div class="flex justify-start mb-3">
+            <div class="bg-slate-100 rounded-xl rounded-tl-none px-3 py-2 max-w-[85%]">
+                <p class="text-slate-700 text-sm">👋 Hallo! Klicke auf das <strong>❓</strong> rechts unten für Beispielfragen oder lade deine PDFs hoch.</p>
             </div>
         </div>
     </div>
 
-    <!-- Input Area -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2">
-        <div class="flex gap-2">
+    <!-- Input Area mit Fragezeichen-Button -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2">
+        <div class="flex gap-2 items-center">
             <input type="text" id="questionInput"
-                   class="flex-1 border-0 focus:ring-0 focus:outline-none p-3 text-slate-700 placeholder-slate-400 rounded-xl"
-                   placeholder="Frage stellen, z.B. 'Was waren meine höchsten Ausgaben im März?' ...">
+                   class="flex-1 border-0 focus:ring-0 focus:outline-none p-2 text-slate-700 placeholder-slate-400 rounded-lg text-sm"
+                   placeholder="Frage stellen...">
             <button id="sendButton"
-                    class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50">
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
                 Senden
             </button>
-        </div>
-
-        <!-- Flexible Vorschlag-Buttons -->
-        <div class="px-3 pb-2">
-            <div class="flex flex-wrap gap-2 mb-2">
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-blue-100 to-blue-50 hover:from-blue-200 hover:to-blue-100 text-blue-700 border border-blue-200"
-                        data-question="Was waren meine höchsten Ausgaben im [Monat]?">
-                    💰 Höchste Ausgaben im...
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-emerald-100 to-emerald-50 hover:from-emerald-200 hover:to-emerald-100 text-emerald-700 border border-emerald-200"
-                        data-question="Welche Kategorie ist am teuersten in [Monat]?">
-                    📊 Teuerste Kategorie im...
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-purple-100 to-purple-50 hover:from-purple-200 hover:to-purple-100 text-purple-700 border border-purple-200"
-                        data-question="Wie hoch war meine Sparquote im [Monat]?">
-                    💹 Sparquote im...
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-amber-100 to-amber-50 hover:from-amber-200 hover:to-amber-100 text-amber-700 border border-amber-200"
-                        data-question="Vergleich [Monat A] mit [Monat B]">
-                    📈 Vergleich zweier Monate
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-rose-100 to-rose-50 hover:from-rose-200 hover:to-rose-100 text-rose-700 border border-rose-200"
-                        data-question="Was waren meine Gesamtausgaben im [Monat]?">
-                    💸 Gesamtausgaben im...
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-cyan-100 to-cyan-50 hover:from-cyan-200 hover:to-cyan-100 text-cyan-700 border border-cyan-200"
-                        data-question="Zeige mir alle Buchungen">
-                    📋 Alle Buchungen
-                </button>
-                <button class="suggestion-btn text-xs px-3 py-1.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-slate-100 to-slate-50 hover:from-slate-200 hover:to-slate-100 text-slate-700 border border-slate-200"
-                        data-question="Wie viele Buchungen wurden importiert?">
-                    📊 Status
-                </button>
-            </div>
-            <div class="text-xs text-slate-400">
-                💡 Tipp: Ersetze [Monat] und [Monat A/B] durch echte Monatsnamen (z.B. "März").
+            <div id="helpBtn" class="help-btn flex-shrink-0">
+                <span class="text-slate-600 font-bold text-lg">?</span>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // DOM Elements
     const chatMessages = document.getElementById('chatMessages');
     const questionInput = document.getElementById('questionInput');
     const sendButton = document.getElementById('sendButton');
@@ -147,8 +194,42 @@
     const uploadProgress = document.getElementById('uploadProgress');
     const pdfFileListDiv = document.getElementById('pdfFileList');
 
+    // Popup Elements
+    const helpPopup = document.getElementById('helpPopup');
+    const helpBtn = document.getElementById('helpBtn');
+    const closePopupBtn = document.getElementById('closePopupBtn');
+
     let selectedFiles = [];
-    let uploadedFiles = []; // Hochgeladene PDFs speichern
+    let uploadedFiles = [];
+
+    // ============ HILFE POPUP ============
+    function openPopup() {
+        helpPopup.classList.add('open');
+    }
+
+    function closePopup() {
+        helpPopup.classList.remove('open');
+    }
+
+    helpBtn.addEventListener('click', openPopup);
+    closePopupBtn.addEventListener('click', closePopup);
+
+    // Klick außerhalb schließt Popup
+    document.addEventListener('click', (event) => {
+        if (!helpPopup.contains(event.target) && !helpBtn.contains(event.target)) {
+            closePopup();
+        }
+    });
+
+    // Sample Questions - ins Textfeld übernehmen
+    document.querySelectorAll('.sample-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const question = btn.textContent.trim();
+            questionInput.value = question;
+            closePopup(); // Popup automatisch schließen
+            questionInput.focus();
+        });
+    });
 
     // ============ CHAT FUNKTIONEN ============
     questionInput.addEventListener('keydown', (e) => {
@@ -160,28 +241,12 @@
 
     sendButton.addEventListener('click', sendMessage);
 
-    // Flexible Vorschlag-Buttons mit Platzhaltern
-    document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            let questionTemplate = btn.getAttribute('data-question');
-            questionInput.value = questionTemplate;
-            questionInput.focus();
-            // Markiere den Platzhalter für einfaches Überschreiben
-            if (questionTemplate.includes('[')) {
-                const start = questionTemplate.indexOf('[');
-                const end = questionTemplate.indexOf(']') + 1;
-                questionInput.setSelectionRange(start, end);
-            }
-        });
-    });
-
     async function sendMessage() {
-        let question = questionInput.value.trim();
+        const question = questionInput.value.trim();
         if (!question) return;
 
         addMessage(question, 'user');
         questionInput.value = '';
-        questionInput.style.height = 'auto';
 
         showTypingIndicator();
         sendButton.disabled = true;
@@ -208,18 +273,18 @@
 
     function addMessage(content, role, sources = null) {
         const div = document.createElement('div');
-        div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-4`;
+        div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-3`;
 
         const bubbleClass = role === 'user'
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-none'
-            : 'bg-slate-100 text-slate-700 rounded-2xl rounded-tl-none';
+            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl rounded-tr-none'
+            : 'bg-slate-100 text-slate-700 rounded-xl rounded-tl-none';
 
         let sourcesHtml = '';
         if (sources && sources.length > 0) {
-            sourcesHtml = `<div class="text-xs text-slate-400 mt-2 pt-2 border-t border-slate-200">📎 Quellen: ${sources.join(', ')}</div>`;
+            sourcesHtml = `<div class="text-xs text-slate-400 mt-1 pt-1 border-t border-slate-200">📎 Quellen: ${sources.join(', ')}</div>`;
         }
 
-        div.innerHTML = `<div class="${bubbleClass} px-4 py-2 max-w-[80%] shadow-sm"><p class="text-sm whitespace-pre-wrap">${escapeHtml(content)}</p>${sourcesHtml}</div>`;
+        div.innerHTML = `<div class="${bubbleClass} px-3 py-2 max-w-[85%]"><p class="text-sm whitespace-pre-wrap">${escapeHtml(content)}</p>${sourcesHtml}</div>`;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -227,8 +292,8 @@
     function showTypingIndicator() {
         const div = document.createElement('div');
         div.id = 'typingIndicator';
-        div.className = 'flex justify-start mb-4';
-        div.innerHTML = `<div class="bg-slate-100 rounded-2xl rounded-tl-none px-4 py-3"><div class="typing-indicator flex gap-1"><span class="w-2 h-2 bg-slate-400 rounded-full inline-block"></span><span class="w-2 h-2 bg-slate-400 rounded-full inline-block"></span><span class="w-2 h-2 bg-slate-400 rounded-full inline-block"></span></div></div>`;
+        div.className = 'flex justify-start mb-3';
+        div.innerHTML = `<div class="bg-slate-100 rounded-xl rounded-tl-none px-3 py-2"><div class="typing-indicator flex gap-1"><span class="w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span><span class="w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span><span class="w-1.5 h-1.5 bg-slate-400 rounded-full inline-block"></span></div></div>`;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -245,7 +310,6 @@
     }
 
     // ============ PDF UPLOAD FUNKTIONEN ============
-
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.pdf';
@@ -267,13 +331,12 @@
     function updateFileList() {
         const container = document.getElementById('fileListPreview');
         if (!container && selectedFiles.length > 0) {
-            // Erstelle Container falls nicht vorhanden
             const parent = document.querySelector('#uploadStatus').parentElement;
             let preview = document.getElementById('fileListPreview');
             if (!preview) {
                 preview = document.createElement('div');
                 preview.id = 'fileListPreview';
-                preview.className = 'mt-3 flex flex-wrap gap-2';
+                preview.className = 'mt-2 flex flex-wrap gap-1';
                 parent.appendChild(preview);
             }
         }
@@ -284,10 +347,10 @@
                 preview.innerHTML = '';
             } else {
                 preview.innerHTML = selectedFiles.map(file => `
-                    <div class="bg-blue-100 border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700 flex items-center gap-2 shadow-sm">
+                    <div class="bg-blue-100 border border-blue-300 rounded-full px-2 py-0.5 text-xs text-blue-700 flex items-center gap-1">
                         <span>📄</span>
-                        <span class="font-medium">${escapeHtml(file.name)}</span>
-                        <button class="remove-file text-blue-600 hover:text-red-600 transition-colors" data-name="${escapeHtml(file.name)}">✕</button>
+                        <span>${escapeHtml(file.name)}</span>
+                        <button class="remove-file text-blue-600 hover:text-red-600" data-name="${escapeHtml(file.name)}">✕</button>
                     </div>
                 `).join('');
             }
@@ -303,19 +366,17 @@
         });
     }
 
-    // Hochgeladene PDFs anzeigen (bleibt sichtbar!)
     function addToPdfFileList(filename) {
         if (!uploadedFiles.includes(filename)) {
             uploadedFiles.push(filename);
         }
 
         if (uploadedFiles.length === 0) {
-            pdfFileListDiv.innerHTML = '<span class="text-xs text-slate-400 italic">Keine PDFs hochgeladen</span>';
+            pdfFileListDiv.innerHTML = '';
         } else {
             pdfFileListDiv.innerHTML = uploadedFiles.map(file => `
-                <div class="bg-green-100 border border-green-300 rounded-full px-3 py-1 text-xs text-green-700 flex items-center gap-2 shadow-sm">
-                    <span>📄</span>
-                    <span class="font-medium">${escapeHtml(file)}</span>
+                <div class="bg-green-100 border border-green-300 rounded-full px-2 py-0.5 text-xs text-green-700 inline-block">
+                    📄 ${escapeHtml(file)}
                 </div>
             `).join('');
         }
@@ -333,7 +394,7 @@
 
         for (let i = 0; i < selectedFiles.length; i++) {
             const file = selectedFiles[i];
-            uploadFileName.textContent = `Lade hoch: ${file.name} (${i+1}/${selectedFiles.length})`;
+            uploadFileName.textContent = `${file.name} (${i+1}/${selectedFiles.length})`;
             uploadProgress.style.width = `${((i) / selectedFiles.length) * 100}%`;
 
             const formData = new FormData();
@@ -346,21 +407,18 @@
                 });
 
                 if (response.ok) {
-                    const result = await response.text();
-                    console.log(`✅ ${file.name}:`, result);
                     successCount++;
-                    addToPdfFileList(file.name); // ← PDF bleibt sichtbar!
+                    addToPdfFileList(file.name);
                 } else {
                     failCount++;
                 }
             } catch (error) {
-                console.error(`❌ ${file.name}:`, error);
                 failCount++;
             }
         }
 
         uploadProgress.style.width = '100%';
-        uploadFileName.textContent = `✅ ${successCount} PDFs erfolgreich hochgeladen, ${failCount} fehlgeschlagen.`;
+        uploadFileName.textContent = `✅ ${successCount} ok, ${failCount} fehlgeschlagen.`;
 
         setTimeout(() => {
             uploadStatus.classList.add('hidden');
@@ -369,15 +427,11 @@
             updateFileList();
             uploadBtn.disabled = true;
             selectFileBtn.disabled = false;
-
             const preview = document.getElementById('fileListPreview');
             if (preview) preview.innerHTML = '';
-
-            setTimeout(() => location.reload(), 1500);
         }, 2000);
     });
 
-    // Bestehende PDFs laden beim Seitenstart
     async function loadExistingFiles() {
         try {
             const response = await fetch('/api/files');
@@ -385,18 +439,17 @@
             if (files && files.length > 0) {
                 uploadedFiles = files;
                 pdfFileListDiv.innerHTML = files.map(file => `
-                    <div class="bg-green-100 border border-green-300 rounded-full px-3 py-1 text-xs text-green-700 flex items-center gap-2 shadow-sm">
-                        <span>📄</span>
-                        <span class="font-medium">${escapeHtml(file)}</span>
+                    <div class="bg-green-100 border border-green-300 rounded-full px-2 py-0.5 text-xs text-green-700 inline-block">
+                        📄 ${escapeHtml(file)}
                     </div>
                 `).join('');
             }
         } catch (error) {
-            console.error('Fehler beim Laden der PDF-Liste:', error);
+            console.error('Fehler:', error);
         }
     }
 
     loadExistingFiles();
 </script>
 </body>
-</html>
+</html>mvn

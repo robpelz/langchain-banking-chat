@@ -8,7 +8,6 @@ import com.banking.pdf_chat_spring.service.TransactionStorageService;
 import com.banking.pdf_chat_spring.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +33,6 @@ public class ChatController {
     private final FinanceAnalysisService analysisService;
     private final TransactionStorageService storage;
 
-
-
     public ChatController(PdfParsingService pdfParsingService,
                           FinanceAnalysisService analysisService,
                           TransactionStorageService storage) {
@@ -47,44 +46,44 @@ public class ChatController {
         model.addAttribute("totalTransactions", storage.count());
         return "index";
     }
+
     @PostMapping("/api/upload")
     @ResponseBody
     public ResponseEntity<?> uploadPdf(@RequestParam("file") MultipartFile file) {
-        long uploadStart = System.currentTimeMillis();
-        log.info("📁 UPLOAD START: {} (Größe: {} bytes)", file.getOriginalFilename(), file.getSize());
-
+        File tempFile = null;
         try {
-            String userDir = System.getProperty("user.dir");
-            File directory = new File(userDir, "pdf-documents");
+            log.info("📁 Upload gestartet: {} (Größe: {} bytes)", file.getOriginalFilename(), file.getSize());
 
-            if (!directory.exists() && !directory.mkdirs()) {
-                log.error("❌ Konnte Verzeichnis nicht erstellen: {}", directory.getAbsolutePath());
-                return ResponseEntity.status(500).body("Konnte Verzeichnis nicht erstellen");
-            }
+            // Temporäre Datei erstellen (wird nach Verarbeitung gelöscht)
+            tempFile = File.createTempFile("upload_", ".pdf");
+            file.transferTo(tempFile);
 
-            File targetFile = new File(directory, sanitizeFilename(file.getOriginalFilename()));
-            file.transferTo(targetFile);
-            log.info("💾 PDF gespeichert: {}", targetFile.getAbsolutePath());
+            log.info("💾 Temporäre Datei erstellt: {}", tempFile.getAbsolutePath());
 
-            long parseStart = System.currentTimeMillis();
-            int transactionCount = pdfParsingService.parseAndStore(targetFile);
-            long parseTime = System.currentTimeMillis() - parseStart;
+            // PDF verarbeiten
+            int transactionCount = pdfParsingService.parseAndStore(tempFile);
 
-            long totalTime = System.currentTimeMillis() - uploadStart;
-
-            log.info("✅ UPLOAD ABGESCHLOSSEN: {} | {} Transaktionen | Gesamtzeit: {} ms | Parse-Zeit: {} ms",
-                    file.getOriginalFilename(), transactionCount, totalTime, parseTime);
+            log.info("✅ {} Transaktionen extrahiert", transactionCount);
 
             return ResponseEntity.ok().body(String.format(
-                    "✅ PDF verarbeitet: %d Transaktionen extrahiert (%.1f Sekunden)",
-                    transactionCount, totalTime / 1000.0));
+                    "✅ PDF verarbeitet: %d Transaktionen extrahiert", transactionCount));
 
         } catch (IOException e) {
-            log.error("❌ UPLOAD FEHLGESCHLAGEN (IO): {}", file.getOriginalFilename(), e);
+            log.error("Upload fehlgeschlagen", e);
             return ResponseEntity.status(500).body("Fehler beim Speichern: " + e.getMessage());
         } catch (Exception e) {
-            log.error("❌ UPLOAD FEHLGESCHLAGEN (Verarbeitung): {}", file.getOriginalFilename(), e);
+            log.error("Verarbeitung fehlgeschlagen", e);
             return ResponseEntity.status(500).body("Fehler: " + e.getMessage());
+        } finally {
+            // Temporäre Datei löschen
+            if (tempFile != null && tempFile.exists()) {
+                try {
+                    Files.delete(tempFile.toPath());
+                    log.info("🗑️ Temporäre Datei gelöscht: {}", tempFile.getName());
+                } catch (IOException e) {
+                    log.warn("Konnte temporäre Datei nicht löschen: {}", tempFile.getName());
+                }
+            }
         }
     }
 
@@ -97,7 +96,7 @@ public class ChatController {
 
     private String processQuestion(String question) {
         String lower = question.toLowerCase();
-        int currentYear = 2026;
+        int currentYear = getCurrentYear();
 
         if (lower.contains("gesamtausgaben") || lower.contains("summe ausgaben")) {
             int month = extractMonth(lower);
@@ -135,7 +134,7 @@ public class ChatController {
             }
         }
 
-        if (lower.contains("vergleich")) {
+        if (lower.contains("vergleich") && lower.contains("januar") && lower.contains("februar")) {
             return analysisService.compareMonths(1, currentYear, 2, currentYear);
         }
 
@@ -157,11 +156,19 @@ public class ChatController {
         return helpText();
     }
 
+    private int getCurrentYear() {
+        return storage.getAllTransactions().stream()
+                .map(tx -> tx.getYear())
+                .max(Integer::compareTo)
+                .orElse(java.time.LocalDate.now().getYear());
+    }
+
     @GetMapping("/api/status")
     @ResponseBody
     public Map<String, Object> getStatus() {
         Map<String, Object> status = new HashMap<>();
         status.put("chunkCount", storage.count());
+        status.put("currentYear", getCurrentYear());
         return status;
     }
 
@@ -186,8 +193,8 @@ public class ChatController {
             ❓ Ich verstehe die Frage nicht.
             
             📌 Beispiele:
-            • 'Gesamtausgaben Januar 2026'
-            • 'Miete 2026'
+            • 'Gesamtausgaben März'
+            • 'Miete'
             • 'Lebensmittel'
             • 'Sparquote Januar'
             • 'Vergleich Januar mit Februar'
@@ -196,27 +203,10 @@ public class ChatController {
             """;
     }
 
-    /**
-     * Entfernt gefährliche Zeichen aus Dateinamen
-     */
-    private String sanitizeFilename(String filename) {
-        if (filename == null) return "unnamed.pdf";
-        return filename.replaceAll("[^a-zA-Z0-9.-]", "_");
-    }
-
     @GetMapping("/api/files")
     @ResponseBody
     public List<String> getUploadedFiles() {
-        String userDir = System.getProperty("user.dir");
-        File dir = new File(userDir, "pdf-documents");
-        if (!dir.exists()) return List.of();
-
-        File[] files = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".pdf"));
-        if (files == null) return List.of();
-
-        return Arrays.stream(files)
-                .map(File::getName)
-                .sorted()
-                .collect(Collectors.toList());
+        // Keine dauerhaft gespeicherten Dateien mehr
+        return List.of();
     }
 }

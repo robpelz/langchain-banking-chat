@@ -186,6 +186,37 @@ curl -X POST http://localhost:8080/api/upload \
 }
 ```
 
+## 🏗️ Systemarchitektur
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Browser as Web Browser
+    participant Controller as ChatController
+    participant Service as PdfParsingService
+    participant Groq as Groq API
+    participant Storage as StorageService
+
+    User->>Browser: 1. PDF hochladen
+    Browser->>Controller: POST /api/upload
+    Controller->>Service: parseAndStore()
+    Service->>Service: 2. Seitenweises Chunking
+    loop Jede Seite
+        Service->>Groq: 3. Prompt mit PDF-Text
+        Groq-->>Service: 4. JSON-Array
+        Service->>Service: 5. JSON parsen → Transactions
+    end
+    Service->>Storage: 6. addAllTransactions()
+    Storage-->>Controller: transactionCount
+    Controller-->>Browser: "✅ 31 Transaktionen"
+    User->>Browser: 7. "Gesamtausgaben März"
+    Browser->>Controller: POST /api/chat
+    Controller->>Storage: getAllTransactions()
+    Storage-->>Controller: List<Transaction>
+    Controller->>Controller: 8. Berechnung
+    Controller-->>Browser: "📊 2.450,00 €"
+    Browser-->>User: 9. Antwort anzeigen
+
 #### 2. Natural-Language-Anfrage an den Finanz-Assistenten senden
 ```bash
 curl -X POST http://localhost:8080/api/chat \

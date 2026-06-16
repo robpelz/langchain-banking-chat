@@ -15,6 +15,10 @@ Klassische regel- oder Regex-basierte Parser scheitern systematisch an der Varia
 
 **Die Lösung:** Dieses Projekt implementiert eine robuste **LLM-first-Pipeline**. Über ein seitenweises, intelligentes Chunking und semantisches Parsing werden volatile Textwüsten deterministisch in strukturierte JSON-Entitäten überführt. Ein integrierter Chatbot ermöglicht im Anschluss deklarative Abfragen über den gesamten Transaktionskorpus.
 
+## 🎯 Warum ich das gebaut habe
+
+Ich wollte mit meinem **Bankkonto chatten** können – einfache Fragen stellen wie *"Was waren meine höchsten Ausgaben diesen Monat?"* oder *"Wie viel habe ich für Lebensmittel ausgegeben?"* und sofort eine Antwort bekommen. Ohne PDFs manuell zu öffnen oder komplizierte Excel-Tabellen zu bauen. Dieses Projekt verwandelt langweilige Kontoauszüge in ein gesprächiges Finanz-Dashboard – alle wichtigen Kennzahlen in Sekundenschnelle.
+
 ---
 
 ## ✨ Kernfunktionen

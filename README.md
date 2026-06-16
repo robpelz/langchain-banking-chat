@@ -307,7 +307,7 @@ Bevor das System in einer produktiven Cloud-Umgebung ausgerollt wird, müssen fo
 
 ---
 
-## 🤝 Contributing-Richtlinien (Senior-Level)
+## 🤝 Contributing-Richtlinien 
 
 Wir begrüßen Beiträge aus der Community. Um die Codequalität auf Senior-Niveau zu halten, halten Sie sich bitte strikt an folgende Software-Engineering-Standards:
 
@@ -327,10 +327,7 @@ Wir begrüßen Beiträge aus der Community. Um die Codequalität auf Senior-Nive
 
 ---
 
-## 👥 Autoren & Lizenz
 
-* **Entwickler / Maintainer** – [Dein Name] (<deine.email@example.com>)
-* **GitHub Profil** – [@your-username](https://github.com)
 
 ### Lizenzierung
 Dieses Projekt ist unter den Bedingungen der **MIT-Lizenz** lizenziert. Das bedeutet, dass Sie den Code ohne Einschränkungen für private, kommerzielle oder akademische Zwecke nutzen, modifizieren und verbreiten dürfen. Siehe die [LICENSE](LICENSE)-Datei für den vollständigen Lizenztext.
